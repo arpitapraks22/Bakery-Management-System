@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: bakery-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bakery-net
+    mem_limit: 512m
+    cpus: "0.5"
+
+  backend:
+    build: ./backend
+    container_name: bakery-backend
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5000:5000"
+    networks:
+      - bakery-net
+    mem_limit: 300m
+    cpus: "0.4"
+
+  frontend:
+    build: ./frontend
+    container_name: bakery-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - bakery-net
+    mem_limit: 200m
+    cpus: "0.2"
+
+  redis:
+    image: redis:7
+    container_name: bakery-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - bakery-net
+    mem_limit: 128m
+    cpus: "0.1"
+
+volumes:
+  postgres_data:
+
+networks:
+  bakery-net:
