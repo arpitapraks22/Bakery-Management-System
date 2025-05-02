@@ -1,106 +1,177 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Bakery App</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 2rem;
-          }
-          h1, h2 {
-            color: #C0392B;
-          }
-          input, select, button {
-            margin: 0.5rem;
-            padding: 0.4rem;
-          }
-          ul {
-            list-style: none;
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakery App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 0;
-          }
-          li {
-            margin-bottom: 0.5rem;
-          }
-        </style>
-      </head>      
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        header {
+            background-color: #C0392B;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        h1, h2 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        h2 {
+            margin-top: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .product-list, .order-form, .status-form {
+            margin-bottom: 2rem;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        select, input, button {
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #C0392B;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #A93226;
+        }
+        label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: block;
+        }
+        .status-result {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        .order-result {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #27ae60;
+        }
+    </style>
+</head>
 <body>
 
-  <h1>Bakery Products</h1>
-  <ul id="product-list"></ul>
+<header>
+    <h1>Bakery Products</h1>
+</header>
 
-  <h2>Place an Order</h2>
-  <form id="order-form">
-    <label for="product-id">Product:</label>
-    <select id="product-id"></select>
-    <label for="quantity">Quantity:</label>
-    <input type="number" id="quantity" min="1" required>
-    <button type="submit">Order</button>
-  </form>
-  <p id="order-result"></p>
+<div class="container">
 
-  <h2>Check Order Status</h2>
-  <form id="status-form">
-    <label for="status-id">Order ID:</label>
-    <input type="number" id="status-id" required>
-    <button type="submit">Check Status</button>
-  </form>
-  <p id="status-result"></p>
+    <!-- Product List -->
+    <div class="product-list">
+        <h2>Our Products</h2>
+        <ul id="product-list"></ul>
+    </div>
 
-  <script>
+    <!-- Place an Order -->
+    <div class="order-form">
+        <h2>Place an Order</h2>
+        <form id="order-form">
+            <label for="product-id">Product:</label>
+            <select id="product-id"></select>
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" min="1" required>
+            <button type="submit">Place Order</button>
+        </form>
+        <p id="order-result" class="order-result"></p>
+    </div>
+
+    <!-- Check Order Status -->
+    <div class="status-form">
+        <h2>Check Order Status</h2>
+        <form id="status-form">
+            <label for="status-id">Order ID:</label>
+            <input type="number" id="status-id" required>
+            <button type="submit">Check Status</button>
+        </form>
+        <p id="status-result" class="status-result"></p>
+    </div>
+
+</div>
+
+<script>
     const backendBase = "http://localhost:5000";
 
     // Load products
     fetch(`${backendBase}/products`)
-      .then(res => res.json())
-      .then(data => {
-        const list = document.getElementById("product-list");
-        const select = document.getElementById("product-id");
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById("product-list");
+            const select = document.getElementById("product-id");
 
-        data.forEach(product => {
-          const li = document.createElement("li");
-          li.textContent = `ID: ${product.id}, Name: ${product.name}, Price: ₹${product.price}`;
-          list.appendChild(li);
+            data.forEach(product => {
+                const li = document.createElement("li");
+                li.classList.add("product-item");
+                li.textContent = `${product.name} - ₹${product.price}`;
+                list.appendChild(li);
 
-          const option = document.createElement("option");
-          option.value = product.id;
-          option.text = `${product.name} (₹${product.price})`;
-          select.appendChild(option);
+                const option = document.createElement("option");
+                option.value = product.id;
+                option.text = `${product.name} (₹${product.price})`;
+                select.appendChild(option);
+            });
         });
-      });
 
     // Handle order form submit
     document.getElementById("order-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const productId = document.getElementById("product-id").value;
-      const quantity = document.getElementById("quantity").value;
+        e.preventDefault();
+        const productId = document.getElementById("product-id").value;
+        const quantity = document.getElementById("quantity").value;
 
-      fetch(`${backendBase}/order`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: productId, quantity: quantity })
-      })
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("order-result").textContent = data.message || "Order placed!";
-      });
+        fetch(`${backendBase}/order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_id: productId, quantity: quantity })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("order-result").textContent = data.message || "Order placed!";
+        });
     });
 
     // Handle order status check
     document.getElementById("status-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const id = document.getElementById("status-id").value;
+        e.preventDefault();
+        const id = document.getElementById("status-id").value;
 
-      fetch(`${backendBase}/order/${id}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("status-result").textContent = `Status: ${data.status}`;
-        })
-        .catch(() => {
-          document.getElementById("status-result").textContent = "Order not found.";
-        });
+        fetch(`${backendBase}/order/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("status-result").textContent = `Status: ${data.status}`;
+            })
+            .catch(() => {
+                document.getElementById("status-result").textContent = "Order not found.";
+            });
     });
-  </script>
+</script>
 
 </body>
 </html>
